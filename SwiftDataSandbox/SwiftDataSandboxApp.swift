@@ -12,6 +12,7 @@ import SwiftData
 struct SwiftDataSandboxApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
+            Shop.self,
             Item.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)

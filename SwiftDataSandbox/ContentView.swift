@@ -10,47 +10,36 @@ import SwiftData
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
-    @Query private var items: [Item]
+    @State private var shop: Shop?
 
     var body: some View {
-        NavigationSplitView {
-            List {
-                ForEach(items) { item in
-                    NavigationLink {
-                        Text("Item at \(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))")
-                    } label: {
-                        Text(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))
-                    }
-                }
-                .onDelete(perform: deleteItems)
-            }
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    EditButton()
-                }
-                ToolbarItem {
-                    Button(action: addItem) {
-                        Label("Add Item", systemImage: "plus")
+        Group {
+            if let shop {
+                List {
+                    Section(shop.name) {
+                        ForEach(shop.items) { item in
+                            Text("\(item.timestamp)")
+                        }
                     }
                 }
             }
-        } detail: {
-            Text("Select an item")
         }
-    }
+        .onAppear {
+            guard shop == nil else { return }
 
-    private func addItem() {
-        withAnimation {
+            let shop = Shop(name: "A")
+            modelContext.insert(shop)
+
             let newItem = Item(timestamp: Date())
-            modelContext.insert(newItem)
-        }
-    }
+            newItem.shop = shop
 
-    private func deleteItems(offsets: IndexSet) {
-        withAnimation {
-            for index in offsets {
-                modelContext.delete(items[index])
-            }
+            let highlightedItem = Item(timestamp: Date().addingTimeInterval(-3600))
+            shop.highlightedItem = highlightedItem
+
+            modelContext.insert(highlightedItem)
+            modelContext.insert(newItem)
+
+            self.shop = shop
         }
     }
 }
